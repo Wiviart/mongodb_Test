@@ -10,10 +10,12 @@ using System.Text.RegularExpressions;
 
 public class ConnectManager : MonoBehaviour
 {
+    internal static ConnectManager Instance;
+
     string appId = "application-0-rbsuv";
     App app;
 
-    public enum ConnectState
+    internal enum ConnectState
     {
         IsLoading,
         IsLogin,
@@ -22,13 +24,12 @@ public class ConnectManager : MonoBehaviour
     }
     [SerializeField] ConnectState connectState = ConnectState.IsLoading;
 
-    public Action OnConnectStateChanged_Login;
-    public Action OnConnectStateChanged_Register;
-    public Action<string> OnConnectStateChanged_Dialog;
-    public Action OnConnectStateChanged_Loading;
-    string message;
+    internal Action OnConnectStateChanged_Login;
+    internal Action OnConnectStateChanged_Register;
+    internal Action<string> OnConnectStateChanged_Dialog;
+    internal Action OnConnectStateChanged_Loading;
 
-    public static ConnectManager Instance { get; internal set; }
+    string message;
 
     void Awake()
     {
@@ -43,7 +44,7 @@ public class ConnectManager : MonoBehaviour
     //***************************************************************/
     //***************************************************************/
 
-    public void SetConnectState(ConnectState state)
+    internal void SetConnectState(ConnectState state)
     {
         connectState = state;
 
@@ -116,7 +117,7 @@ public class ConnectManager : MonoBehaviour
         }
     }
 
-    public async void Register(string email, string password)
+    async void Register(string email, string password)
     {
         SetConnectState(ConnectState.IsLoading);
 
@@ -134,7 +135,7 @@ public class ConnectManager : MonoBehaviour
     //***************************************************************/
     //***************************************************************/
 
-    public async void Login(string email, string password)
+    internal async void Login(string email, string password)
     {
         SetConnectState(ConnectState.IsLoading);
 
@@ -148,7 +149,7 @@ public class ConnectManager : MonoBehaviour
     //***************************************************************/
     //***************************************************************/
 
-    public async void GetDataUser()
+    internal async void GetDataUser()
     {
         var user = app.CurrentUser;
         var collection = user.GetMongoClient("mongodb-atlas").GetDatabase("Test").GetCollection("Users");
