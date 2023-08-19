@@ -7,13 +7,18 @@ using System;
 using System.Diagnostics;
 using Debug = UnityEngine.Debug;
 using System.Text.RegularExpressions;
+using UnityEditor.SearchService;
 
 public class ConnectManager : MonoBehaviour
 {
     internal static ConnectManager Instance;
 
     string appId = "application-0-rbsuv";
+    string serviceName = "mongodb-atlas";
+    string databaseName = "Test";
+    string collectionName = "Users";
     App app;
+    User user;
 
     internal enum ConnectState
     {
@@ -121,10 +126,18 @@ public class ConnectManager : MonoBehaviour
     {
         SetConnectState(ConnectState.IsLoading);
 
-        await app.EmailPasswordAuth.RegisterUserAsync(email, password);
+        try
+        {
+            await app.EmailPasswordAuth.RegisterUserAsync(email, password);
+            message = "Register Success";
+        }
+        catch (Exception e)
+        {
+            message = e.Message;
+        }
 
-        message = "Register Success";
         SetConnectState(ConnectState.IsDialog);
+        SetConnectState(ConnectState.IsRegister);
     }
 
     private bool IsValidEmail(string email)
@@ -139,10 +152,26 @@ public class ConnectManager : MonoBehaviour
     {
         SetConnectState(ConnectState.IsLoading);
 
-        Credentials mailCredentials = Credentials.EmailPassword(email, password);
+        try
+        {
+            Credentials mailCredentials = Credentials.EmailPassword(email, password);
+            user = await app.LogInAsync(mailCredentials);
 
-        var user = await app.LogInAsync(mailCredentials);
+            if (user != null)
+            {
+                Scene_Manager.Instance.LoadScene(Scene_Manager.SceneName.SampleScene.ToString());
+            }
+            else
+            {
+                message = "Email is not registered or password is incorrect";
+            }
+        }
+        catch (Exception e)
+        {
+            message = e.Message;
+        }
 
+        SetConnectState(ConnectState.IsDialog);
         SetConnectState(ConnectState.IsLogin);
     }
 
@@ -152,7 +181,7 @@ public class ConnectManager : MonoBehaviour
     internal async void GetDataUser()
     {
         var user = app.CurrentUser;
-        var collection = user.GetMongoClient("mongodb-atlas").GetDatabase("Test").GetCollection("Users");
+        var collection = user.GetMongoClient(serviceName).GetDatabase(databaseName).GetCollection(collectionName);
         var documents = await collection.FindOneAsync(new { uid = user.Id });
 
         foreach (var document in documents)

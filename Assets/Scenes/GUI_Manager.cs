@@ -45,7 +45,7 @@ public class GUI_Manager : MonoBehaviour
         ConnectManager.Instance.OnConnectStateChanged_Dialog += Dialog;
         ConnectManager.Instance.OnConnectStateChanged_Loading += Loading;
 
-        GoToLoginButton();
+        ShowUIOnStart();
     }
 
     void GoToRegisterButton()
@@ -55,7 +55,16 @@ public class GUI_Manager : MonoBehaviour
         loadingUI.SetActive(false);
         loginUI.SetActive(false);
     }
+
     void GoToLoginButton()
+    {
+        loginUI.SetActive(true);
+
+        loadingUI.SetActive(false);
+        registerUI.SetActive(false);
+    }
+
+    void ShowUIOnStart()
     {
         loginUI.SetActive(true);
 
