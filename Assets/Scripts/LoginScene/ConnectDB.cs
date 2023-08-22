@@ -4,14 +4,14 @@ using UnityEngine;
 using Realms;
 using Realms.Sync;
 using System;
-using System.Diagnostics;
 using Debug = UnityEngine.Debug;
 using System.Text.RegularExpressions;
-using UnityEditor.SearchService;
+using MongoDB.Bson;
+using System.Threading.Tasks;
 
-public class ConnectManager : MonoBehaviour
+public class ConnectDB : MonoBehaviour
 {
-    internal static ConnectManager Instance;
+    internal static ConnectDB Instance;
 
     string appId = "application-0-rbsuv";
     string serviceName = "mongodb-atlas";
@@ -36,9 +36,15 @@ public class ConnectManager : MonoBehaviour
 
     string message;
 
+    //***************************************************************/
+    //***************************************************************/
+
     void Awake()
     {
-        Instance = this;
+        DontDestroyOnLoad(gameObject);
+
+        if (!Instance) Instance = this;
+        else Destroy(gameObject);
     }
 
     void Start()
@@ -159,7 +165,14 @@ public class ConnectManager : MonoBehaviour
 
             if (user != null)
             {
-                Scene_Manager.Instance.LoadScene(Scene_Manager.SceneName.SampleScene.ToString());
+                await GetDataUser();
+
+                if (playerData != null)
+                {
+                    message = "Login Success";
+
+                    LoadMainMenu();
+                }
             }
             else
             {
@@ -177,20 +190,67 @@ public class ConnectManager : MonoBehaviour
 
     //***************************************************************/
     //***************************************************************/
-
-    internal async void GetDataUser()
+    void LoadMainMenu()
     {
-        var user = app.CurrentUser;
-        var collection = user.GetMongoClient(serviceName).GetDatabase(databaseName).GetCollection(collectionName);
-        var documents = await collection.FindOneAsync(new { uid = user.Id });
-
-        foreach (var document in documents)
-        {
-            Debug.Log(document.ToString());
-        }
+        Scene_Manager.Instance.LoadScene(SceneName.MainMenu);
     }
 
     //***************************************************************/
     //***************************************************************/
 
+    PlayerData playerData;
+    MongoClient.Collection<PlayerData> collections;
+
+    void ConnectToCollection()
+    {
+        User user = app.CurrentUser;
+
+        collections = user.GetMongoClient(serviceName).GetDatabase(databaseName).GetCollection<PlayerData>(collectionName);
+    }
+
+    async Task GetDataUser()
+    {
+        if (collections == null)
+            ConnectToCollection();
+
+        try
+        {
+            playerData = await collections.FindOneAsync(new { UserID = user.Id });
+        }
+        catch (Exception e)
+        {
+            Debug.Log(e.Message);
+        }
+    }
+
+    internal PlayerData GetUserData()
+    {
+        return playerData;
+    }
+
+    //***************************************************************/
+    //***************************************************************/
+
+    public async void UpdateUserName()
+    {
+        if (collections == null)
+            ConnectToCollection();
+
+        try
+        {
+            await collections.UpdateOneAsync(new { UserID = user.Id }, new BsonDocument { { "$set", new BsonDocument { { "name", playerData.Name } } } });
+            Debug.Log("Update Success");
+        }
+        catch (Exception e)
+        {
+            Debug.Log(e.Message);
+        }
+    }
+
+    internal void UpdateUserName(string name)
+    {
+        playerData.Name = name;
+
+        UpdateUserName();
+    }
 }

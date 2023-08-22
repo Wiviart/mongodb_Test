@@ -40,10 +40,10 @@ public class GUI_Manager : MonoBehaviour
 
     void Start()
     {
-        ConnectManager.Instance.OnConnectStateChanged_Login += GoToLoginButton;
-        ConnectManager.Instance.OnConnectStateChanged_Register += GoToRegisterButton;
-        ConnectManager.Instance.OnConnectStateChanged_Dialog += Dialog;
-        ConnectManager.Instance.OnConnectStateChanged_Loading += Loading;
+        ConnectDB.Instance.OnConnectStateChanged_Login += GoToLoginButton;
+        ConnectDB.Instance.OnConnectStateChanged_Register += GoToRegisterButton;
+        ConnectDB.Instance.OnConnectStateChanged_Dialog += Dialog;
+        ConnectDB.Instance.OnConnectStateChanged_Loading += Loading;
 
         ShowUIOnStart();
     }
@@ -92,7 +92,7 @@ public class GUI_Manager : MonoBehaviour
         string email = register_EmailInput.text;
         string password = register_PasswordInput.text;
 
-        ConnectManager.Instance.CheckRegister(email, password);
+        ConnectDB.Instance.CheckRegister(email, password);
     }
 
     void LoginButton()
@@ -100,7 +100,7 @@ public class GUI_Manager : MonoBehaviour
         string email = login_EmailInput.text;
         string password = login_passwordInput.text;
 
-        ConnectManager.Instance.Login(email, password);
+        ConnectDB.Instance.Login(email, password);
     }
 
     private void CloseDialogButton()
