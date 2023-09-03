@@ -41,7 +41,7 @@ public class ConnectDB : MonoBehaviour
 
     void Awake()
     {
-        DontDestroyOnLoad(gameObject);
+        // DontDestroyOnLoad(gameObject);
 
         if (!Instance) Instance = this;
         else Destroy(gameObject);
